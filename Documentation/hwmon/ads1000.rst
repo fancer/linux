@@ -1,0 +1,72 @@
+Kernel driver ads1000
+=====================
+
+Supported chips:
+
+  * Texas Instruments ADS1000
+
+    Prefix: 'ads1000'
+
+    Datasheet: Publicly available at the Texas Instruments website:
+
+               http://www.ti.com/lit/ds/symlink/ads1000.pdf
+
+  * Texas Instruments ADS1100
+
+    Prefix: 'ads1100'
+
+    Datasheet: Publicly available at the Texas Instruments website:
+
+               http://www.ti.com/lit/ds/symlink/ads1100.pdf
+
+Authors:
+	Serge Semin <fancer.lancer@gmail.com>
+
+Description
+-----------
+
+This driver implements support for the Texas Instruments ADS1000/ADS1100 ADCs.
+
+This device is a 12-16 bit A-D converter with 1 input.
+
+The inputs can be used either as a differential pair of Vin+ Vin- or as a single
+ended sensor for Vin+ GND. The inputs mode is platform-dependent and isn't
+configured by software in any case.
+
+Platform Data
+-------------
+
+In linux/platform_data/ads1000.h platform data is defined to be of
+the following fields:
+
+ - pga is the programmable gain amplifier.
+
+    - 0: x1
+    - 1: x2
+    - 2: x4
+    - 3: x8
+
+ - data_rate in samples per second also affecting the output code accuracy.
+
+    - 0: 128SPS - +/- Vdd*0.488mV (ads1000 accepts this rate only)
+    - 1: 32SPS  - +/- Vdd*0.122mV
+    - 2: 16SPS  - +/- Vdd*0.061mV
+    - 3: 8SPS   - +/- Vdd*0.030mV
+   Since this parameter also affects the output accuracy, be aware the greater
+   SPS the worse accuracy.
+
+ - vdd is a pointer to the voltage regulator with reference voltage source.
+
+ - divider is an array of inbound voltage dividers in <R1 R2> Ohms, if each of
+   them is non-zero then the output voltage will be modified as follows:
+   dVin = (R1 + R2)/R2 * dVin.
+
+As a result the output value is calculated by the next formulae:
+dVin = Cod * Vdd / (PGA * max(|Cod|)), where max(|Cod|) - maximum possible
+value of the output code, which depends on the SPS setting from data_rate.
+
+Devicetree
+----------
+
+Configuration is also possible via devicetree:
+Documentation/devicetree/bindings/hwmon/ads1000.txt
